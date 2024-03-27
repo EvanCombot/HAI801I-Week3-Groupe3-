@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int N = 3;
+int N;
 
 int evaluate(const vector<vector<char>>& board) {
     bool brk = false;

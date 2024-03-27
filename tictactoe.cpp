@@ -187,6 +187,7 @@ int main(int argc, char* argv[]) {
     file.clear();
     file.seekg(0);
 
+    std::cout << "Executing the minimax algorithm on a " << N << " x " << N << " board.\n";
     std::cout << "Parsed " << filename << ", fetched " << line_count << " lines.\n";
 
     while (getline(file, line)) {

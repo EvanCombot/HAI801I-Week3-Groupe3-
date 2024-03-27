@@ -13,6 +13,10 @@ int evaluate(const vector<vector<char>>& board) {
     bool brk = false;
     char val;
 
+    auto ret = [&](char val) {
+        return val == 'X' ? 10 : -10;
+    };
+
     for (int i = 0; i < N; i++) {
         val = board[i][0];
         for(int j = 1; j < N; j++) {
@@ -26,9 +30,9 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return val == 'X' ? 10 : -10;
+        if(!brk) return ret(val);
         brk = false;
-        val=board[0][i];
+        val = board[0][i];
         for(int j = 1; j < N; j++) {
             
             if(val==' '){
@@ -40,10 +44,10 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return val=='X' ? 10 : -10;
+        if(!brk) return ret(val);
         brk = false;
     }
-    brk=false;
+    brk = false;
 
     val = board[0][0];
     if(val != ' ') {
@@ -53,7 +57,7 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return val == 'X' ? 10 : -10;
+        if(!brk) return ret(val);
         brk = false;
     }
     val = board[0][N-1];
@@ -64,7 +68,7 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return val == 'X' ? 10 : -10;
+        if(!brk) return ret(val);
     }
 
     return 0;
@@ -80,6 +84,7 @@ bool isMovesLeft(const vector<vector<char>>& board) {
 }
 
 int minimax(vector<vector<char>>& board, int depth, bool isMax) {
+
     int score = evaluate(board);
 
     if (score == 10 || score == -10) return score;
@@ -148,11 +153,41 @@ int simulateGame(vector<vector<char>>& board, char player) {
     return evaluate(board);
 }
 
-int main() {
-    ifstream file("dataset.txt");
+void print_board(vector<vector<char>>& board, char player) {
+
+    std::cout << "Turn: " << player << "\n";
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            std::cout << board[i][j];
+        }
+        std::cout << '\n';
+    }
+
+}
+
+int main(int argc, char* argv[]) {
+
+    char filename[256];
+
+    if(argc < 3) {
+        std::cout << "Usage: ./tictactoe size dataset.txt\n";
+        exit(EXIT_FAILURE);
+    }
+
+    sscanf(argv[2], "%s", filename);
+    sscanf(argv[1], "%d", &N);
+
+    ifstream file(filename);
     string line;
     int winsForX = 0, winsForO = 0, draw = 0, cpt = 0;
     auto start = chrono::high_resolution_clock::now();
+
+    int line_count = 0; while (getline (file, line)) line_count++;
+
+    file.clear();
+    file.seekg(0);
+
+    std::cout << "Parsed " << filename << ", fetched " << line_count << " lines.\n";
 
     while (getline(file, line)) {
         cpt++;
@@ -172,7 +207,11 @@ int main() {
         }
         else if (result == -10) winsForO++;
         else draw++;
+        std::cout << cpt << "/" << line_count << "\r";
+
     }
+
+    std::cout << "\n";
 
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end - start;

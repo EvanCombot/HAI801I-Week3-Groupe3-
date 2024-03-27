@@ -4,18 +4,31 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
+#include <unordered_map>
 
 using namespace std;
 
 int N;
+int explored_count;
+
+unordered_map<string, int> explored_states;
+
+string string_from_board(const vector<vector<char>>& board, char player) {
+
+    string res;
+    res.push_back(player);
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            res.push_back(board[i][j]);
+        }
+    }
+
+    return res;
+}
 
 int evaluate(const vector<vector<char>>& board) {
     bool brk = false;
     char val;
-
-    auto ret = [&](char val) {
-        return val == 'X' ? 10 : -10;
-    };
 
     for (int i = 0; i < N; i++) {
         val = board[i][0];
@@ -25,26 +38,26 @@ int evaluate(const vector<vector<char>>& board) {
                 brk = true;
                 break;
             }
-            if(board[i][j] != val){
+            if(board[i][j] != val) {
                 brk = true;
                 break;
             }
         }
-        if(!brk) return ret(val);
+        if(!brk) return val == 'X' ? 10 : -10;
         brk = false;
         val = board[0][i];
         for(int j = 1; j < N; j++) {
             
-            if(val==' '){
-                brk=true;
+            if(val == ' ') {
+                brk = true;
                 break;
             }
-            if(board[j][i] != val){
-                brk=true;
+            if(board[j][i] != val) {
+                brk = true;
                 break;
             }
         }
-        if(!brk) return ret(val);
+        if(!brk) return val == 'X' ? 10 : -10;
         brk = false;
     }
     brk = false;
@@ -57,7 +70,7 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return ret(val);
+        if(!brk) return val == 'X' ? 10 : -10;
         brk = false;
     }
     val = board[0][N-1];
@@ -68,7 +81,7 @@ int evaluate(const vector<vector<char>>& board) {
                 break;
             }
         }
-        if(!brk) return ret(val);
+        if(!brk) return val == 'X' ? 10 : -10;
     }
 
     return 0;
@@ -85,14 +98,22 @@ bool isMovesLeft(const vector<vector<char>>& board) {
 
 int minimax(vector<vector<char>>& board, int depth, bool isMax) {
 
+    string hash = string_from_board(board, isMax ? 'X' : 'O');
+    if(explored_states.find(hash) != explored_states.end()) {
+        return explored_states.at(hash);
+    }
+    
+    explored_count++;
     int score = evaluate(board);
 
     if (score == 10 || score == -10) return score;
 
     if (!isMovesLeft(board)) return 0;
 
+    int best;
+
     if (isMax) {
-        int best = -1000;
+        best = -1000;
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -103,9 +124,8 @@ int minimax(vector<vector<char>>& board, int depth, bool isMax) {
                 }
             }
         }
-        return best;
     } else {
-        int best = 1000;
+        best = 1000;
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -116,8 +136,10 @@ int minimax(vector<vector<char>>& board, int depth, bool isMax) {
                 }
             }
         }
-        return best;
     }
+
+    explored_states.insert(std::make_pair(hash, best));
+    return best;
 }
 
 pair<int, int> bestMove(vector<vector<char>>& board, char player) {
@@ -190,6 +212,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Executing the minimax algorithm on a " << N << " x " << N << " board.\n";
     std::cout << "Parsed " << filename << ", fetched " << line_count << " lines.\n";
 
+    explored_count = 0;
+
     while (getline(file, line)) {
         cpt++;
         char player = line[0];
@@ -208,7 +232,8 @@ int main(int argc, char* argv[]) {
         }
         else if (result == -10) winsForO++;
         else draw++;
-        std::cout << cpt << "/" << line_count << "\r";
+        std::cout << "Number of explored states: " << explored_count << "\n";
+        explored_count = 0;
 
     }
 

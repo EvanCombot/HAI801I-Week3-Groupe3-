@@ -4,10 +4,27 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
+#include <unordered_map>
 
 using namespace std;
 
 int N;
+int explored_count;
+
+unordered_map<string, int> explored_states;
+
+string string_from_board(const vector<vector<char>>& board, char player) {
+
+    string res;
+    res.push_back(player);
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            res.push_back(board[i][j]);
+        }
+    }
+
+    return res;
+}
 
 int evaluate(const vector<vector<char>>& board) {
     bool brk = false;
@@ -84,14 +101,23 @@ bool isMovesLeft(const vector<vector<char>>& board) {
 }
 
 int minimax(vector<vector<char>>& board, int depth, int alpha, int beta, bool isMax) {
+
+    string hash = string_from_board(board, isMax ? 'X' : 'O');
+    if(explored_states.find(hash) != explored_states.end()) {
+        return explored_states.at(hash);
+    }
+
+    explored_count++;
     int score = evaluate(board);
 
     if (score == 10 || score == -10) return score;
 
     if (!isMovesLeft(board)) return 0;
 
+    int best;
+
     if (isMax) {
-        int best = -1000;
+        best = -1000;
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -105,9 +131,8 @@ int minimax(vector<vector<char>>& board, int depth, int alpha, int beta, bool is
                 }
             }
         }
-        return best;
     } else {
-        int best = 1000;
+        best = 1000;
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -121,8 +146,10 @@ int minimax(vector<vector<char>>& board, int depth, int alpha, int beta, bool is
                 }
             }
         }
-        return best;
     }
+
+    explored_states.insert(std::make_pair(hash, best));
+    return best;
 }
 
 pair<int, int> bestMove(vector<vector<char>>& board, char player) {
@@ -193,6 +220,8 @@ int main(int argc, char* argv[]) {
     file.clear();
     file.seekg(0);
 
+    explored_count = 0;
+
     std::cout << "Parsed " << filename << ", fetched " << line_count << " lines.\n";
 
     while (getline(file, line)) {
@@ -213,7 +242,8 @@ int main(int argc, char* argv[]) {
         }
         else if (result == -10) winsForO++;
         else draw++;
-        std::cout << cpt << "/" << line_count << "\r";
+        std::cout << "Number of explored states: " << explored_count << "\n";
+        explored_count = 0;
 
     }
 

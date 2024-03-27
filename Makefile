@@ -1,11 +1,9 @@
 CC = g++
 CPPFLAGS = -Wall -Ofast
 
-EXEC = tictactoe
-TARGET = tictactoe.cpp
-
 default: install
 
 install:
-	@$(CC) $(CPPFLAGS) $(TARGET) -o $(EXEC)
+	@$(CC) $(CPPFLAGS) tictactoe.cpp -o tictactoe
+	@$(CC) $(CPPFLAGS) MinMaxAlphaBeta.cpp -o alphabeta
 

@@ -83,8 +83,7 @@ bool isMovesLeft(const vector<vector<char>>& board) {
     return false;
 }
 
-int minimax(vector<vector<char>>& board, int depth, bool isMax) {
-
+int minimax(vector<vector<char>>& board, int depth, int alpha, int beta, bool isMax) {
     int score = evaluate(board);
 
     if (score == 10 || score == -10) return score;
@@ -98,8 +97,11 @@ int minimax(vector<vector<char>>& board, int depth, bool isMax) {
             for (int j = 0; j < N; j++) {
                 if (board[i][j] == ' ') {
                     board[i][j] = 'X';
-                    best = max(best, minimax(board, depth + 1, !isMax));
+                    best = max(best, minimax(board, depth + 1, alpha, beta, !isMax));
+                    alpha = max(alpha, best);
                     board[i][j] = ' ';
+                    if (beta <= alpha)
+                        break;  // Beta cut-off
                 }
             }
         }
@@ -111,8 +113,11 @@ int minimax(vector<vector<char>>& board, int depth, bool isMax) {
             for (int j = 0; j < N; j++) {
                 if (board[i][j] == ' ') {
                     board[i][j] = 'O';
-                    best = min(best, minimax(board, depth + 1, !isMax));
+                    best = min(best, minimax(board, depth + 1, alpha, beta, !isMax));
+                    beta = min(beta, best);
                     board[i][j] = ' ';
+                    if (beta <= alpha)
+                        break;  // Alpha cut-off
                 }
             }
         }
@@ -128,7 +133,8 @@ pair<int, int> bestMove(vector<vector<char>>& board, char player) {
         for (int j = 0; j < N; j++) {
             if (board[i][j] == ' ') {
                 board[i][j] = player;
-                int moveVal = minimax(board, 0, player == 'O');
+                int moveVal = minimax(board, 0, -1000, 1000, player == 'O');
+
                 board[i][j] = ' ';
                 if ((player == 'X' && moveVal > bestVal) || (player == 'O' && moveVal < bestVal)) {
                     bestMove = {i, j};
@@ -187,7 +193,6 @@ int main(int argc, char* argv[]) {
     file.clear();
     file.seekg(0);
 
-    std::cout << "Executing the minimax algorithm on a " << N << " x " << N << " board.\n";
     std::cout << "Parsed " << filename << ", fetched " << line_count << " lines.\n";
 
     while (getline(file, line)) {

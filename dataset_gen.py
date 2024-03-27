@@ -72,12 +72,20 @@ class TicTacToeBoard:
                 if self.board[0+j][i] == self.board[1+j][i] == self.board[2+j][i] != 0:
                     return True
 
-        for i in range(self.size - 2):
-            for j in range(self.size - 2):
-                if self.board[0 + i][0 + j] == self.board[1 + i][1 + j] == self.board[2 + i][2 + j] != 0:
-                    return True
-                if self.board[0 + i][2 + j] == self.board[1 + i][1 + j] == self.board[2 + i][0 + j] != 0:
-                    return True
+        v1 = self.board[0][0]
+        v1Valid = v1 != 0
+        v2 = self.board[0][self.size - 1]
+        v2Valid = v2 != 0
+
+        for i in range(1, self.size):
+            if v1 != 0 and self.board[i][i] != v1:
+                v1Valid = False
+
+            if v2 != 0 and self.board[i][self.size - 1 - i] != v2:
+                v2Valid = False
+
+        if v1Valid or v2Valid:
+            return True
 
         # test if board is full
         found_zero = False
@@ -130,11 +138,10 @@ def generateDataset(board: TicTacToeBoard, file: TextIOWrapper | BufferedWriter,
     board.printToFile(file)
     l = board.getChildren()
     r.shuffle(l)
+    k += 1
     for child in l:
         if (child.isFinal() or k >= args.samples):
             return
-
-        k += 1
 
         if (k % 100 == 0):
             bar_length = 50
@@ -151,6 +158,7 @@ def generateDataset(board: TicTacToeBoard, file: TextIOWrapper | BufferedWriter,
 
 if args.mode == 'ascii':
     with open(args.output, 'w') as file:
+        file.write(f'{args.size}\n')
         generateDataset(TicTacToeBoard(size=args.size, mode=0), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:
@@ -158,6 +166,7 @@ if args.mode == 'ascii':
 
 else:
     with open(args.output, 'wb') as file:
+        file.write(bytes([args.size]))
         generateDataset(TicTacToeBoard(size=args.size, mode=1), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:

@@ -43,7 +43,7 @@ class TicTacToeBoard:
                         bitsetO[(i * self.size + j) //
                                 8] |= 1 << (i * self.size + j) % 8
 
-            file.write(bytes([self.turn]))
+            file.write(bytes([self.turn - 1]))
             file.write(bitsetX.tobytes())
             file.write(bitsetO.tobytes())
 
@@ -66,17 +66,18 @@ class TicTacToeBoard:
     def isFinal(self) -> bool:
         # test if there is a winner
         for i in range(self.size):
-            for j in range(self.size - 3):
+            for j in range(self.size - 2):
                 if self.board[i][0+j] == self.board[i][1+j] == self.board[i][2+j] != 0:
                     return True
                 if self.board[0+j][i] == self.board[1+j][i] == self.board[2+j][i] != 0:
                     return True
 
-        for i in range(self.size - 3):
-            if self.board[0 + i][0 + i] == self.board[1 + i][1 + i] == self.board[2 + i][2 + i] != 0:
-                return True
-            if self.board[0 + i][2 + i] == self.board[1 + i][1 + i] == self.board[2+i][0+i] != 0:
-                return True
+        for i in range(self.size - 2):
+            for j in range(self.size - 2):
+                if self.board[0 + i][0 + j] == self.board[1 + i][1 + j] == self.board[2 + i][2 + j] != 0:
+                    return True
+                if self.board[0 + i][2 + j] == self.board[1 + i][1 + j] == self.board[2 + i][0 + j] != 0:
+                    return True
 
         # test if board is full
         found_zero = False
@@ -111,7 +112,7 @@ parser.add_argument('--samples', "-n", type=int, default=100000,
 parser.add_argument('--mode', "-m", type=str, default='ascii', choices=['ascii', 'bitset'],
                     help='Output mode, ascii or bitset')
 parser.add_argument('--seed', "-r", type=int, default=time(),
-                    help='Random seed')
+                    help='Random seed (default: current time)')
 
 args = parser.parse_args()
 
@@ -131,7 +132,7 @@ def generateDataset(board: TicTacToeBoard, file: TextIOWrapper | BufferedWriter,
     r.shuffle(l)
     for child in l:
         if (child.isFinal() or k >= args.samples):
-            continue
+            return
 
         k += 1
 
@@ -150,6 +151,7 @@ def generateDataset(board: TicTacToeBoard, file: TextIOWrapper | BufferedWriter,
 
 if args.mode == 'ascii':
     with open(args.output, 'w') as file:
+        file.write(f'{args.size}\n')
         generateDataset(TicTacToeBoard(size=args.size, mode=0), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:
@@ -157,6 +159,7 @@ if args.mode == 'ascii':
 
 else:
     with open(args.output, 'wb') as file:
+        file.write(bytes([args.size]))
         generateDataset(TicTacToeBoard(size=args.size, mode=1), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:

@@ -151,7 +151,6 @@ def generateDataset(board: TicTacToeBoard, file: TextIOWrapper | BufferedWriter,
 
 if args.mode == 'ascii':
     with open(args.output, 'w') as file:
-        file.write(f'{args.size}\n')
         generateDataset(TicTacToeBoard(size=args.size, mode=0), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:
@@ -159,7 +158,6 @@ if args.mode == 'ascii':
 
 else:
     with open(args.output, 'wb') as file:
-        file.write(bytes([args.size]))
         generateDataset(TicTacToeBoard(size=args.size, mode=1), file)
         print("[" + "=" * 50 + "]" + " 100%   ", end="\n")
         # for item in s:
